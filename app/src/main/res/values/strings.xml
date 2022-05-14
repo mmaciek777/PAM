@@ -1,63 +1,31 @@
 <resources>
     <string name="app_name">GoogleMaps</string>
 
-    <string name="google_maps_API_key">AIzaSyB–zOWiVG2-5TavI9AGKLzOi8kfLfwTK1s</string>
-
     <!-- POLISH -->
     <string name="hello">Witaj! Uruchom mapę!</string>
     <string name="map">Mapa</string>
     <string name="searching">Podaj adres, miasto lub kod pocztowy</string>
     <string name="map_is_ready">Mapa jest gotowa!</string>
 
-    <string name="isServicesOK_1">\"isServicesOK: Sprawdzanie wersji usług google \"</string>
-    <string name="isServicesOK_2">isServicesOK: Usługi Google Play działają poprawnie</string>
-    <string name="isServicesOK_3">isServicesOK: Wystąpił błąd, ale możemy go naprawić</string>
     <string name="Cant_run_map">Nie można uruchomić map</string>
-    <string name="OnMapReady">OnMapReady: Mapa jest gotowa</string>
-    <string name="init">init: Inicjalizacja</string>
-    <string name="onClick">onClick: Wciśnięto ikonę GPS</string>
-    <string name="geoLocate_1">geoLocate: Uruchomiono geolokalizację</string>
-    <string name="geoLocate_2">\"geoLocate: IOException: \"</string>
-    <string name="geoLocate_3">\"geoLocate: Odnaleziono lokalizację: \"</string>
-    <string name="getLocationPermission">getLocationPermission: Przydzielanie uprawnień</string>
-    <string name="getDeviceLocation_1">getDeviceLocation: Pobieranie aktualnej lokalizacji urządzenia</string>
-    <string name="onComplete_1">onComplete: Odnaleziono lokalizację</string>
+    <string name="geoLocate">\"geoLocate: IOException: \"</string>
     <string name="Localization">Moja lokalizacja</string>
-    <string name="onComplete_2">onComplete: Obecna lokalizacja jest pusta</string>
     <string name="Cant_get_location">Nie można pobrać aktualnej lokalizacji</string>
-    <string name="getDeviceLocation_2">\"getDeviceLocation: SecurityException: \"</string>
-    <string name="initMap">initMap: inicjalizacja mapy</string>
-    <string name="onRequestPermissionsResult_1">onRequestPermissionsResult: Wysłano zapytanie.</string>
-    <string name="onRequestPermissionsResult_2">onRequestPermissionsResult: Brak uprawnień.</string>
-    <string name="onRequestPermissionsResult_3">onRequestPermissionsResult: Przyznano uprawnienia.</string>
+    <string name="getDeviceLocation">\"getDeviceLocation: SecurityException: \"</string>
+
 
     <!-- ENGLISH
         <string name="hello">Hello! Run the map!</string>
         <string name="map">Map</string>
         <string name="searching">Insert address, city or ZIP code</string>
         <string name="map_is_ready">Map is ready!</string>
-        <string name="isServicesOK_1">\"isServicesOK: Checking the version of google services \"</string>
-        <string name="isServicesOK_2">isServicesOK: Google play services work</string>
-        <string name="isServicesOK_3">isServicesOK: There is a problem, but we can try to fit it</string>
+
         <string name="Cant_run_map">Cannot run the map</string>
-        <string name="OnMapReady">OnMapReady: map is ready</string>
-        <string name="init">init: initializing</string>
-        <string name="onClick">onClick: clicked gps icon</string>
-        <string name="geoLocate_1">geoLocate: geolocating</string>
-        <string name="geoLocate_2">\"geoLocate: IOException: \"</string>
-        <string name="geoLocate_3">\"geoLocate: found a location: \"</string>
-        <string name="getLocationPermission">getLocationPermission: getting permission</string>
-        <string name="getDeviceLocation">getDeviceLocation: getting the devices current location</string>
-        <string name="onComplete">onComplete: found location</string>
+        <string name="geoLocate">\"geoLocate: IOException: \"</string>
         <string name="Localization">My localization</string>
-        <string name="onComplete_2">onComplete: current location is null</string>
-        <string name="Cant_get_location">unable to get current location</string>
-        <string name="getDeviceLocation_2">\"getDeviceLocation: SecurityException: \"</string>
-        <string name="initMap">initMap: Initialization the map</string>
-        <string name="onRequestPermissionsResult_1">onRequestPermissionsResult: called.</string>
-        <string name="onRequestPermissionsResult_2">onRequestPermissionsResult: permission failed.</string>
-        <string name="onRequestPermissionsResult_3">onRequestPermissionsResult: permission granted.</string>
+        <string name="Cant_get_location">Unable to get current location</string>
+        <string name="getDeviceLocation">\"getDeviceLocation: SecurityException: \"</string>
+
     -->
 
 </resources>
-

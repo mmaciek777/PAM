@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
@@ -23,11 +22,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -42,18 +38,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleApiClient.OnConnectionFailedListener{
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback{
 
-   @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
-    }
+    private static final String TAG = "MapActivity";
+    private static final float DEFAULT_ZOOM = 16;
+    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136)); //Sosnowiec
+
+    private Boolean mLocationPermissionsGranted = false;
+    private GoogleMap mMap;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
+    private static final int LOCATION_CODE = 1234;
+
+    private AutoCompleteTextView mSearchText;   //Wyszukiwarka
+    private ImageView mGPS; //Ikonka GPS
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        Toast.makeText(this, R.string.map_is_ready, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, getString(R.string.OnMapReady));
+        Toast.makeText(this, R.string.map_is_ready, Toast.LENGTH_SHORT).show(); //"Mapa jest gotowa"
         mMap = googleMap;
 
         if (mLocationPermissionsGranted) {
@@ -72,21 +74,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    private static final String TAG = "MapActivity";
-    private static final float DEFAULT_ZOOM = 15;
-    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136));
-
-    private Boolean mLocationPermissionsGranted = false;
-    private GoogleMap mMap;
-    private FusedLocationProviderClient mFusedLocationProviderClient;
-    private GoogleApiClient mGoogleApiClient;
-
-    private static final int LOCATION_CODE = 1234;
-
-    //widzety
-    private AutoCompleteTextView mSearchText;
-    private ImageView mGPS;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,47 +83,33 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         getLocationPermission();
 
-
     }
 
     private void init(){
-        Log.d(TAG, getString(R.string.init));
-
-        mGoogleApiClient = new GoogleApiClient
-                .Builder(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(this, this)
-                .build();
-
 
         mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) {
+            public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) { //Przyciski na które reaguje wyszukiwarka
                 if(actionID == EditorInfo.IME_ACTION_SEARCH
                         || actionID == EditorInfo.IME_ACTION_DONE
                         || keyEvent.getAction() == KeyEvent.ACTION_DOWN
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER ){
                     geoLocate();
-
                 }
-
                 return false;
             }
         });
 
         mGPS.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Log.d(TAG, getString(R.string.onClick));
+            public void onClick(View view) {    //Wciśnięcie ikony GPS
                 getDeviceLocation();
             }
         });
 
-        hideSoftKeyboard();
     }
-    private void geoLocate(){
-        Log.d(TAG, getString(R.string.geoLocate_1));
+
+    private void geoLocate(){   //Uruchomiono geolokalizację
 
         String searchString = mSearchText.getText().toString();
 
@@ -145,21 +118,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         try{
             list = geocoder.getFromLocationName(searchString, 1);
         }catch (IOException e){
-            Log.e(TAG, getString(R.string.geoLocate_2) + e.getMessage());
+            Log.e(TAG, getString(R.string.geoLocate) + e.getMessage());
         }
 
         if(list.size() > 0){
             Address address = list.get(0);
-            Log.d(TAG, getString(R.string.geoLocate_3) + address.toString());
 
             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()),DEFAULT_ZOOM, address.getAddressLine(0));
         }
     }
 
-    private void getLocationPermission() {
-        Log.d(TAG,getString(R.string.getLocationPermission));
-        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION};    //bardzo dokladna lokalizacja
+    private void getLocationPermission() {  //Przydzielaniee uprawnień
+
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};    //Bardzo dokladna lokalizacja
 
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -175,9 +146,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    private void getDeviceLocation(){
-        Log.d(TAG, getString(R.string.getDeviceLocation_1));
-
+    private void getDeviceLocation(){ //Pobieranie aktualnej lokalizacji urządzenia
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         try{
@@ -186,21 +155,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 location.addOnCompleteListener(new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
-                        if(task.isSuccessful()){
-                            Log.d(TAG, getString(R.string.onComplete_1));
+                        if(task.isSuccessful()){    //Odnaleziono lokalizacje i przesunięcie kamery na lokalizacje
                             Location currentLocation = (Location) task.getResult();
 
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM, getString(R.string.Localization));
                         }else{
-                            Log.d(TAG, getString(R.string.onComplete_2));
-                            Toast.makeText(MapActivity.this, R.string.Cant_get_location, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MapActivity.this, R.string.Cant_get_location, Toast.LENGTH_SHORT).show();  //Obecna lokalizacja wynosi null
                         }
                     }
                 });
             }
         }catch (SecurityException e){
-            Log.e(TAG, getString(R.string.getDeviceLocation_2) + e.getMessage());
+            Log.e(TAG, getString(R.string.getDeviceLocation) + e.getMessage());
         }
     }
 
@@ -213,19 +180,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.addMarker(options);
         }
 
-        hideSoftKeyboard();
     }
 
-    private void initMap(){
+    private void initMap(){ //Inicjalizacja mapy
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        Log.d(TAG, getString(R.string.initMap));
         mapFragment.getMapAsync(MapActivity.this);
     }
 
     @SuppressLint("MissingSuperCall")
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.d(TAG,getString(R.string.onRequestPermissionsResult_1));
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) { //Wysłano zapytanie
+
         mLocationPermissionsGranted = false;
 
         switch(requestCode){
@@ -233,21 +198,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if(grantResults.length>0 ){
                     for(int i = 0; i < grantResults.length; i++)
                         if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
-                            mLocationPermissionsGranted = false;
-                            Log.d(TAG,getString(R.string.onRequestPermissionsResult_2));
+                            mLocationPermissionsGranted = false; //Nie przyznano uprawnień
                             return;
                         }
-                    Log.d(TAG,getString(R.string.onRequestPermissionsResult_3));
-                    mLocationPermissionsGranted = true;
+                    mLocationPermissionsGranted = true;   //Przyznano uprawnienia
                     //inicjuj mapę
                     initMap();
                 }
             }
         }
     }
-    private void hideSoftKeyboard(){
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-    }
-
 
 }
