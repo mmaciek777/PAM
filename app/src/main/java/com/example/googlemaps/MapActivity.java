@@ -167,8 +167,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
         if(!title.equals(getString(R.string.Localization))){
-            MarkerOptions options = new MarkerOptions().position(latLng).title(title);
-            mMap.addMarker(options);
+            MarkerOptions mMarker= new MarkerOptions().position(latLng).title(title);
+            mMap.addMarker(mMarker);
         }
     }
 
