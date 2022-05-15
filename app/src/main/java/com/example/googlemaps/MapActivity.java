@@ -29,7 +29,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -42,15 +41,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     private static final String TAG = "MapActivity";
-    private static final float DEFAULT_ZOOM = 16;
-    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136)); //Sosnowiec
-
-    private Boolean mLocationPermissionsGranted = false;
-    private GoogleMap mMap;
-    private FusedLocationProviderClient mFusedLocationProviderClient;
+    private static final float ZOOM = 16;
     private static final int LOCATION_CODE = 1234;
+    private Boolean mLocationPermissionsGranted = false;  //Domyślne brak uprawnień
 
-    private AutoCompleteTextView mSearchText;   //Wyszukiwarka
+    private GoogleMap mMap;     //Mapa google
+    private AutoCompleteTextView mAutoCompleteTextView;   //Wyszukiwarka
     private ImageView mGPS; //Ikonka GPS
 
     @Override
@@ -78,7 +74,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        mSearchText = (AutoCompleteTextView) findViewById(R.id.input_search);
+        mAutoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.search);
         mGPS = (ImageView) findViewById(R.id.ic_gps);
 
         getLocationPermission();
@@ -87,13 +83,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void init(){
 
-        mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mAutoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) { //Przyciski na które reaguje wyszukiwarka
-                if(actionID == EditorInfo.IME_ACTION_SEARCH
-                        || actionID == EditorInfo.IME_ACTION_DONE
-                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
-                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER ){
+                if(actionID == EditorInfo.IME_ACTION_SEARCH || actionID == EditorInfo.IME_ACTION_DONE || keyEvent.getAction() == KeyEvent.ACTION_DOWN|| keyEvent.getAction() == KeyEvent.KEYCODE_ENTER ){
                     geoLocate();
                 }
                 return false;
@@ -111,12 +104,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void geoLocate(){   //Uruchomiono geolokalizację
 
-        String searchString = mSearchText.getText().toString();
+        String searchString = mAutoCompleteTextView.getText().toString();
 
-        Geocoder geocoder = new Geocoder(MapActivity.this);
-        List<Address> list = new ArrayList<>();
+        Geocoder mGeocoder = new Geocoder(MapActivity.this);
+        List<Address> list = new ArrayList<>();    //lista pod sugerowane wyszukiwanie, które nie zadziałało :c
         try{
-            list = geocoder.getFromLocationName(searchString, 1);
+            list = mGeocoder.getFromLocationName(searchString, 1);
         }catch (IOException e){
             Log.e(TAG, getString(R.string.geoLocate) + e.getMessage());
         }
@@ -124,7 +117,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if(list.size() > 0){
             Address address = list.get(0);
 
-            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()),DEFAULT_ZOOM, address.getAddressLine(0));
+            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()),ZOOM, address.getAddressLine(0));
         }
     }
 
@@ -147,19 +140,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void getDeviceLocation(){ //Pobieranie aktualnej lokalizacji urządzenia
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        FusedLocationProviderClient mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         try{
             if(mLocationPermissionsGranted){
-                Task location = mFusedLocationProviderClient.getLastLocation();
+                Task location = mFusedLocationClient.getLastLocation();
                 location.addOnCompleteListener(new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
-                        if(task.isSuccessful()){    //Odnaleziono lokalizacje i przesunięcie kamery na lokalizacje
+                        if(task.isSuccessful()){    //Odnaleziono lokalizacje + przesunięcie kamery na lokalizacje
                             Location currentLocation = (Location) task.getResult();
-
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
-                                    DEFAULT_ZOOM, getString(R.string.Localization));
+                                    ZOOM, getString(R.string.Localization));
                         }else{
                             Toast.makeText(MapActivity.this, R.string.Cant_get_location, Toast.LENGTH_SHORT).show();  //Obecna lokalizacja wynosi null
                         }
@@ -172,14 +164,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void moveCamera(LatLng latLng, float zoom, String title){
-        Log.d(TAG, "moveCamera: ustaw kamerę na: lat: " + latLng.latitude + ", lng: " + latLng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
         if(!title.equals(getString(R.string.Localization))){
             MarkerOptions options = new MarkerOptions().position(latLng).title(title);
             mMap.addMarker(options);
         }
-
     }
 
     private void initMap(){ //Inicjalizacja mapy
@@ -193,18 +183,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         mLocationPermissionsGranted = false;
 
-        switch(requestCode){
-            case LOCATION_CODE:{
-                if(grantResults.length>0 ){
-                    for(int i = 0; i < grantResults.length; i++)
-                        if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
-                            mLocationPermissionsGranted = false; //Nie przyznano uprawnień
-                            return;
-                        }
-                    mLocationPermissionsGranted = true;   //Przyznano uprawnienia
-                    //inicjuj mapę
-                    initMap();
-                }
+        if (requestCode == LOCATION_CODE) {
+            if (grantResults.length > 0) {
+                for (int i = 0; i < grantResults.length; i++)
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        mLocationPermissionsGranted = false; //Nie przyznano uprawnień
+                        return;
+                    }
+                mLocationPermissionsGranted = true;   //Przyznano uprawnienia
+                //inicjuj mapę
+                initMap();
             }
         }
     }

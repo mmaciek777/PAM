@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
         if(available == ConnectionResult.SUCCESS){  //Wszystko działa poprawnie
             return true;
-
         }else if(GoogleApiAvailability.getInstance().isUserResolvableError(available)){ //Wystąpił błąd, ale można go rozwiązać
             Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(MainActivity.this, available, ERROR_DIALOG_REQUEST);
             dialog.show();
